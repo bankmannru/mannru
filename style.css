@@ -1,0 +1,182 @@
+.head {
+    margin: 0;
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 2em;
+    color: white;
+    background: linear-gradient(to bottom, rgb(64, 224, 208), #0066ff);
+    padding: 40px 25px;
+    text-align: center;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #0066ff, #ff0066, #00ff66);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+}
+
+.modal-gradient {
+    font-family: Tahoma;
+    font-weight: 500;
+    padding-left: 10px;
+    color: white;
+}
+a {
+    font-size: 15px;
+    color: white;
+    border: gray 2px solid;
+    border-radius: 7px;
+    padding: 6px 12px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    background-color: rgba(128, 128, 128, 0.5);
+    text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.3);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+}
+
+a:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+a:active {
+    background-color: darkred;
+}
+
+.header {
+    font-size: medium;
+    background-color: turquoise;
+    font-family: 'Segoe UI';
+    color: black;
+    padding: 16px;
+    text-align: center;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.outlinebtn {
+    background-color: rgba(0, 255, 255, 0.5);
+    font-size: 15px;
+    color: black;
+    border: black 2px solid;
+    border-radius: 7px;
+    padding: 6px 12px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    text-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+}
+
+.outlinebtn:hover {
+    transform: scale(1.1);
+
+}
+
+.cardimg {
+    max-width: 40%;
+    height: auto;
+    display: block;
+    margin: 20px 0 20px 0;
+    transition: all 0.3s ease;
+}
+
+.cardimg:hover {
+    transform: scale(1.1) rotate(2deg);
+}
+
+.cardimg:active {
+    transform: scale(0.9);
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+
+.cardtext {
+    font-size: 20px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    margin-left: 40px;
+    margin-top: 60px;
+    color: white;
+    font-size: 32px;
+}
+
+t
+.cardiv {
+    background: linear-gradient(to bottom, rgba(35, 139, 139, 0.6), rgba(7, 89, 182, 0.6));
+    border-radius: 15px;
+    border: 2px solid black;
+    padding: 20px;
+    margin: 15px;
+    display: flex;
+    align-items: top;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    width: fit-content;
+    height: fit-content;
+}
+
+.goodstext {
+    font-size: 20px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    margin-top: 10px;
+    text-align: center;
+    color: white;
+}
+
+.goodsdiv {
+    background: linear-gradient(to bottom, rgba(35, 139, 139, 0.6), rgba(7, 89, 182, 0.6));
+    border-radius: 15px;
+    border: 2px solid black;
+    padding: 20px;
+    margin: 15px;
+    display: flex;
+    align-items: top;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    height: 500px;
+    width: 300px;
+    transition: transform 0.3s ease;
+}
+
+.goodsdiv:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+.goodsdiv:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+
+.goodsimg {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 20px 0 20px 0;
+    transition: all 0.3s ease;
+}
+
+.goodsprice {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 24px;
+    color: #FF6B00;
+    text-shadow: 0 0 10px rgba(255, 107, 0, 0.7);
+    align-self: center;
+}
+
+.goodsdesc {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: white;
+    text-align: center;
+}

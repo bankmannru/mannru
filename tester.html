@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Sandbox</title>
+    <style>
+        canvas {
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            background: #111;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 255, 0.2),
+                0 0 20px rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(45deg, #0066ff, #ff0066, #00ff66);
+            background-size: 900% 400%;
+            animation: gradientMove 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+        .controls {
+            margin: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(0, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        button:hover {
+            background: rgba(0, 255, 255, 0.4);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <button onclick="addCircle()">Add Circle</button>
+        <button onclick="addSquare()">Add Square</button>
+        <button onclick="addTriangle()">Add Triangle</button>
+        <button onclick="addPentagon()">Add Pentagon</button>
+        <button onclick="toggleDrawMode()">Draw Custom Shape</button>
+        <button onclick="toggleMouseCollision()">Toggle Mouse Collision</button>
+    </div>
+    <script>
+        // Initialize Matter.js components
+        const Engine = Matter.Engine,
+              Render = Matter.Render,
+              World = Matter.World,
+              Bodies = Matter.Bodies,
+              Mouse = Matter.Mouse,
+              MouseConstraint = Matter.MouseConstraint,
+              Body = Matter.Body,
+              Vertices = Matter.Vertices;
+
+        // Create engine and world
+        const engine = Engine.create();
+        const world = engine.world;
+
+        // Create renderer
+        const render = Render.create({
+            canvas: document.querySelector('#canvas'),
+            engine: engine,
+            options: {
+                width: 800,
+                height: 600,
+                wireframes: false,
+                background: 'transparent',
+                hasBounds: true
+            }
+        });
+
+        // Drawing mode variables
+        let isDrawing = false;
+        let drawMode = false;
+        let drawPoints = [];
+        let drawContext = render.canvas.getContext('2d');
+
+        // Mouse collision variables
+        let mouseBody;
+        let mouseCollisionEnabled = false;
+
+        // Create walls with glowing effect
+        const walls = [
+            Bodies.rectangle(400, 610, 810, 60, { 
+                isStatic: true, 
+                render: { 
+                    fillStyle: 'rgba(0, 255, 255, 0.2)',
+                    strokeStyle: 'rgba(0, 255, 255, 0.5)',
+                    lineWidth: 2
+                } 
+            }),
+            Bodies.rectangle(400, -10, 810, 60, { 
+                isStatic: true, 
+                render: { 
+                    fillStyle: 'rgba(0, 255, 255, 0.2)',
+                    strokeStyle: 'rgba(0, 255, 255, 0.5)',
+                    lineWidth: 2
+                } 
+            }),
+            Bodies.rectangle(-10, 300, 60, 610, { 
+                isStatic: true, 
+                render: { 
+                    fillStyle: 'rgba(0, 255, 255, 0.2)',
+                    strokeStyle: 'rgba(0, 255, 255, 0.5)',
+                    lineWidth: 2
+                } 
+            }),
+            Bodies.rectangle(810, 300, 60, 610, { 
+                isStatic: true, 
+                render: { 
+                    fillStyle: 'rgba(0, 255, 255, 0.2)',
+                    strokeStyle: 'rgba(0, 255, 255, 0.5)',
+                    lineWidth: 2
+                } 
+            })
+        ];
+
+        // Create various shapes with neon colors
+        const shapes = [
+            Bodies.circle(300, 100, 30, { 
+                render: { 
+                    fillStyle: '#ff0066',
+                    strokeStyle: '#ff99bb',
+                    lineWidth: 2
+                }
+            }),
+            Bodies.rectangle(400, 200, 80, 80, { 
+                render: { 
+                    fillStyle: '#00ff66',
+                    strokeStyle: '#99ffbb',
+                    lineWidth: 2
+                }
+            }),
+            Bodies.polygon(500, 300, 5, 40, { 
+                render: { 
+                    fillStyle: '#0066ff',
+                    strokeStyle: '#99bbff',
+                    lineWidth: 2
+                }
+            }),
+            Bodies.polygon(200, 300, 3, 40, { 
+                render: { 
+                    fillStyle: '#ffff00',
+                    strokeStyle: '#ffffaa',
+                    lineWidth: 2
+                }
+            }),
+            Bodies.rectangle(600, 150, 120, 40, { 
+                render: { 
+                    fillStyle: '#ff00ff',
+                    strokeStyle: '#ff99ff',
+                    lineWidth: 2
+                }
+            }),
+            Bodies.circle(350, 400, 45, { 
+                render: { 
+                    fillStyle: '#00ffff',
+                    strokeStyle: '#99ffff',
+                    lineWidth: 2
+                }
+            })
+        ];
+
+        // Add mouse control
+        const mouse = Mouse.create(render.canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: false
+                }
+            }
+        });
+
+        // Add all bodies to the world
+        World.add(world, [...shapes, mouseConstraint]);
+
+        // Keep the mouse in sync with rendering
+        render.mouse = mouse;
+
+        // Run the engine and renderer
+        Engine.run(engine);
+        Render.run(render);
+
+        // Random neon color generator
+        function getRandomColor() {
+            const neonColors = [
+                '#ff0066', '#00ff66', '#0066ff', 
+                '#ffff00', '#ff00ff', '#00ffff'
+            ];
+            return neonColors[Math.floor(Math.random() * neonColors.length)];
+        }
+
+        // Toggle mouse collision function
+        function toggleMouseCollision() {
+            mouseCollisionEnabled = !mouseCollisionEnabled;
+            
+            if (mouseCollisionEnabled) {
+                if (mouseBody) World.remove(world, mouseBody);
+                
+                mouseBody = Bodies.circle(0, 0, 15, {
+                    isStatic: true,
+                    render: {
+                        fillStyle: 'rgba(0, 255, 255, 0.3)',
+                        strokeStyle: 'rgba(0, 255, 255, 0.8)',
+                        lineWidth: 2
+                    }
+                });
+                
+                World.add(world, mouseBody);
+                
+                render.canvas.addEventListener('mousemove', updateMousePosition);
+            } else {
+                if (mouseBody) {
+                    World.remove(world, mouseBody);
+                    mouseBody = null;
+                }
+                
+                render.canvas.removeEventListener('mousemove', updateMousePosition);
+            }
+        }
+
+        function updateMousePosition(event) {
+            const rect = render.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            Body.setPosition(mouseBody, {
+                x: x,
+                y: y
+            });
+        }
+
+        // Shape adding functions
+        function addCircle() {
+            const circle = Bodies.circle(
+                Math.random() * 600 + 100,
+                50,
+                Math.random() * 20 + 20,
+                { 
+                    render: { 
+                        fillStyle: getRandomColor(),
+                        strokeStyle: 'rgba(255, 255, 255, 0.5)',
+                        lineWidth: 2
+                    }
+                }
+            );
+            World.add(world, circle);
+        }
+
+        function addSquare() {
+            const size = Math.random() * 40 + 40;
+            const square = Bodies.rectangle(
+                Math.random() * 600 + 100,
+                50,
+                size,
+                size,
+                { 
+                    render: { 
+                        fillStyle: getRandomColor(),
+                        strokeStyle: 'rgba(255, 255, 255, 0.5)',
+                        lineWidth: 2
+                    }
+                }
+            );
+            World.add(world, square);
+        }
+
+        function addTriangle() {
+            const triangle = Bodies.polygon(
+                Math.random() * 600 + 100,
+                50,
+                3,
+                Math.random() * 20 + 30,
+                { 
+                    render: { 
+                        fillStyle: getRandomColor(),
+                        strokeStyle: 'rgba(255, 255, 255, 0.5)',
+                        lineWidth: 2
+                    }
+                }
+            );
+            World.add(world, triangle);
+        }
+
+        function addPentagon() {
+            const pentagon = Bodies.polygon(
+                Math.random() * 600 + 100,
+                50,
+                5,
+                Math.random() * 20 + 30,
+                { 
+                    render: { 
+                        fillStyle: getRandomColor(),
+                        strokeStyle: 'rgba(255, 255, 255, 0.5)',
+                        lineWidth: 2
+                    }
+                }
+            );
+            World.add(world, pentagon);
+        }
+
+        function toggleDrawMode() {
+            drawMode = !drawMode;
+            mouseConstraint.constraint.stiffness = drawMode ? 0 : 0.2;
+        }
+
+        // Drawing event listeners
+        render.canvas.addEventListener('mousedown', (e) => {
+            if (drawMode) {
+                isDrawing = true;
+                const rect = render.canvas.getBoundingClientRect();
+                drawPoints.push({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                });
+            }
+        });
+
+        render.canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing && drawMode) {
+                const rect = render.canvas.getBoundingClientRect();
+                const point = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+                drawPoints.push(point);
+
+                // Clear previous preview
+                drawContext.clearRect(0, 0, render.canvas.width, render.canvas.height);
+                
+                // Draw the preview shape with glow effect
+                drawContext.beginPath();
+                drawContext.moveTo(drawPoints[0].x, drawPoints[0].y);
+                for (let i = 1; i < drawPoints.length; i++) {
+                    drawContext.lineTo(drawPoints[i].x, drawPoints[i].y);
+                }
+                drawContext.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+                drawContext.lineWidth = 4;
+                drawContext.shadowColor = 'rgba(0, 255, 255, 0.5)';
+                drawContext.shadowBlur = 10;
+                drawContext.stroke();
+            }
+        });
+
+        render.canvas.addEventListener('mouseup', () => {
+            if (drawMode && drawPoints.length > 2) {
+                // Clear the preview
+                drawContext.clearRect(0, 0, render.canvas.width, render.canvas.height);
+                
+                const customShape = Bodies.fromVertices(
+                    drawPoints[0].x,
+                    drawPoints[0].y,
+                    [drawPoints],
+                    {
+                        render: { 
+                            fillStyle: getRandomColor(),
+                            strokeStyle: 'rgba(255, 255, 255, 0.5)',
+                            lineWidth: 2
+                        }
+                    }
+                );
+                if (customShape) {
+                    World.add(world, customShape);
+                }
+            }
+            isDrawing = false;
+            drawPoints = [];
+        });
+
+        // Add scroll wheel rotation with smooth animation
+        document.addEventListener('wheel', (event) => {
+            const mousePosition = mouse.position;
+            const bodies = Matter.Query.point(world.bodies, mousePosition);
+            
+            if (bodies.length > 0) {
+                const rotationAmount = event.deltaY * 0.001;
+                Body.rotate(bodies[0], rotationAmount);
+            }
+        });
+
+        // Add right-click shape changing with transition effect
+        render.canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            const mousePosition = mouse.position;
+            const bodies = Matter.Query.point(world.bodies, mousePosition);
+            
+            if (bodies.length > 0 && !bodies[0].isStatic) {
+                const body = bodies[0];
+                const pos = body.position;
+                const options = {
+                    render: { 
+                        fillStyle: getRandomColor(),
+                        strokeStyle: 'rgba(255, 255, 255, 0.5)',
+                        lineWidth: 2
+                    }
+                };
+                
+                // Remove the old body
+                World.remove(world, body);
+                
+                // Create a random new shape
+                const shapeType = Math.floor(Math.random() * 4);
+                let newBody;
+                
+                switch(shapeType) {
+                    case 0:
+                        newBody = Bodies.circle(pos.x, pos.y, Math.random() * 20 + 20, options);
+                        break;
+                    case 1:
+                        const size = Math.random() * 40 + 40;
+                        newBody = Bodies.rectangle(pos.x, pos.y, size, size, options);
+                        break;
+                    case 2:
+                        newBody = Bodies.polygon(pos.x, pos.y, 3, Math.random() * 20 + 30, options);
+                        break;
+                    case 3:
+                        newBody = Bodies.polygon(pos.x, pos.y, 5, Math.random() * 20 + 30, options);
+                        break;
+                }
+                
+                World.add(world, newBody);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <div class='header'>Мы набираем работников для банк Маннру. <a class='outlinebtn' href="https://wa.me/+79268911629">Подать заявку</a></div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Банк Маннру</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div>
+        <h1 class='head'">Добро пожаловать в банк Маннру!</h1>
+        <h2 class='modal-gradient'>Добро пожаловать в банк Маннру! Эта версия сайта ещё в разработке, так что не ожидайте много. <a class='button' href="market.html" onclick="alert('Вы собираетесь перейти в маркет');">История сайта</a></h2>
+    </div>
+    <p>Введите пароль чтобы продолжить:<input type=password id="passwordType"/></p>
+    <a href="salman.html" onclick="return passwordCheck();">check</a>
+
+    <script>
+        function passwordCheck() {
+    var password = document.getElementById("passwordType");
+    var passwordTyped = password.value;
+    if(passwordTyped == "a555") {
+        return true;
+    }
+    alert("no");
+    return false;
+}
+    </script>
+    
+</body>
+</html>
